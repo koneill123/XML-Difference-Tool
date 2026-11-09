@@ -1,0 +1,47 @@
+@* Page-wide "please wait" overlay: a status message and a progress bar, with no Cancel button.
+   Counterpart of the WinForms ProgressForm.
+
+   The overlay is rendered as soon as Visible becomes true but fades in only after ShowDelayMs, so quick operations
+   never flash it. The delay is a CSS animation delay rather than a C# timer because the page runs on a single
+   thread: a timer cannot fire while the thread is busy, but the browser can keep running CSS animations of
+   opacity and transform on its compositor, which also keeps the indeterminate bar moving during long work. *@
+
+@if (Visible)
+{
+    <div class="progress-backdrop" style="--show-delay: @(ShowDelayMs)ms">
+        <div class="progress-dialog" role="alertdialog" aria-modal="true" aria-labelledby="progress-title" aria-describedby="progress-message">
+            <h2 id="progress-title" class="progress-title">Please wait</h2>
+            <p id="progress-message" class="progress-message" aria-live="polite">@Message</p>
+
+            <div class="progress-track" role="progressbar" aria-labelledby="progress-title"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Percent">
+                @if (Percent is int percent)
+                {
+                    <div class="progress-fill" style="width: @(percent)%"></div>
+                }
+                else
+                {
+                    <div class="progress-indeterminate"></div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Whether the overlay is shown.</summary>
+    [Parameter] public bool Visible { get; set; }
+
+    /// <summary>The status message, for example "Comparing the two files...".</summary>
+    [Parameter] public string Message { get; set; } = "Working...";
+
+    /// <summary>0.0 to 1.0 when the amount of work is known; null for an indeterminate bar.</summary>
+    [Parameter] public double? Fraction { get; set; }
+
+    /// <summary>How long to wait, in milliseconds, before the overlay becomes visible.</summary>
+    [Parameter] public int ShowDelayMs { get; set; } = 400;
+
+    private int? Percent => Fraction is double fraction
+        ? Math.Clamp((int)Math.Round(fraction * 100), 0, 100)
+        : null;
+}

@@ -1,0 +1,124 @@
+## .gitignore for a .NET (C#) solution: WinForms + Blazor WebAssembly + class libraries
+## Based on the standard GitHub "VisualStudio" template, trimmed to what applies here.
+
+## ---------- Visual Studio / VS Code / Rider ----------
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.rsuser
+launchSettings.json.user
+*.DotSettings.user
+_ReSharper*/
+*.[Rr]e[Ss]harper
+.localhistory/
+
+## ---------- Build output ----------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+*.log
+
+## ---------- Publish output ----------
+publish/
+PublishScripts/
+*.pubxml
+*.pubxml.user
+*.publishproj
+*.[Pp]ublish.xml
+*.azurePubxml
+
+## ---------- Blazor WebAssembly ----------
+## Compiled framework/static output (regenerated on build)
+**/wwwroot/_framework/
+**/wwwroot/_content/
+**/wwwroot/*.br
+**/wwwroot/*.gz
+
+## ---------- NuGet ----------
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ---------- Test results & coverage ----------
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+TestResults/
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+## ---------- Compiler / tooling artifacts ----------
+*.pdb
+*.ilk
+*.obj
+*.pch
+*.pgc
+*.pgd
+*.idb
+*.tmp
+*.tmp_proj
+*_i.c
+*_p.c
+*.cache
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+BenchmarkDotNet.Artifacts/
+.dotnet/
+.nuget/
+
+## ---------- Secrets & local config (never commit these) ----------
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+*.pfx
+*.snk
+.env
+.env.*
+
+## ---------- OS junk ----------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk

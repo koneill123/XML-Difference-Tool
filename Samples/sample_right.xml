@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameOptions version="1.1" profile="Player1">
+  <!-- Header: Language and Tagline differ, Avatar is new -->
+  <Profile>
+    <PlayerName>NightOwl</PlayerName>
+    <Language>French</Language>
+    <Region>NA</Region>
+    <Avatar>Wizard</Avatar>
+    <Tagline>Ready for a new adventure.</Tagline>
+  </Profile>
+
+  <Video>
+    <Resolution width="2560" height="1440" />
+    <DisplayMode>Fullscreen</DisplayMode>
+    <VSync>true</VSync>
+    <FrameRateCap units="fps">144</FrameRateCap>
+    <Quality>
+      <Textures>High</Textures>
+      <Shadows>Ultra</Shadows>
+      <!-- AntiAliasing removed; MotionBlur added -->
+      <MotionBlur>Off</MotionBlur>
+    </Quality>
+    <FieldOfView units="degrees">90</FieldOfView>
+  </Video>
+
+  <!-- Same volume channels, listed in a different order to test order-insensitive matching -->
+  <Audio>
+    <Volume channel="Voice">100</Volume>
+    <Volume channel="Voice2">100</Volume>
+    <Volume channel="Effects">75</Volume>
+    <Volume channel="Master">55</Volume>
+    <Volume channel="Music">60</Volume>
+    <Volume channel="Ambient">40</Volume>
+    <Subtitles enabled="false" />
+  </Audio>
+
+  <Controls>
+    <Binding action="MoveForward" device="Keyboard">
+      <Key>W</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <!-- Jump key changed -->
+    <Binding action="Jump" device="Keyboard">
+      <Key>Enter</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <Binding action="Sprint" device="Keyboard">
+      <Key>LeftShift</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <!-- Interact binding only in the right file -->
+    <Binding action="Interact" device="Keyboard">
+      <Key>E</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <MouseSensitivity>0.45</MouseSensitivity>
+  </Controls>
+
+  <Gameplay>
+    <Difficulty>Hard</Difficulty>
+    <Autosave enabled="false">
+      <Interval units="min">10</Interval>
+    </Autosave>
+    <ShowHints>true</ShowHints>
+    <!-- CameraShake removed; ColorblindMode added -->
+    <ColorblindMode>Deuteranopia</ColorblindMode>
+  </Gameplay>
+
+  <Network>
+    <Region>Auto</Region>
+    <MaxPing units="ms">80</MaxPing>
+    <VoiceChat>true</VoiceChat>
+  </Network>
+</GameOptions>

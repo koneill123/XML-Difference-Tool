@@ -1,0 +1,27 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+
+  <PropertyGroup>
+    <!-- Defaults. installer\build-installer.ps1 overrides AppVersion and PublishFolder on the command line. -->
+    <AppVersion Condition="'$(AppVersion)' == ''">1.0.0</AppVersion>
+    <PublishFolder Condition="'$(PublishFolder)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\publish</PublishFolder>
+    <LicensePath>$(MSBuildThisFileDirectory)..\..\LICENSE</LicensePath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputName>XMLDifferenceTool-$(AppVersion)-x64</OutputName>
+    <InstallerPlatform>x64</InstallerPlatform>
+
+    <!-- Makes these values available to Package.wxs as $(AppVersion), $(PublishFolder) and $(LicensePath) -->
+    <DefineConstants>$(DefineConstants);AppVersion=$(AppVersion);PublishFolder=$(PublishFolder);LicensePath=$(LicensePath)</DefineConstants>
+
+    <!-- Per-user installs trip these Windows Installer consistency checks (files under the user profile,
+         new folders under the user profile). They are expected for a per-user package. -->
+    <SuppressIces>ICE38;ICE64;ICE91</SuppressIces>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Standard WiX dialogs (the Custom Setup feature tree used for the optional desktop shortcut) -->
+    <PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>

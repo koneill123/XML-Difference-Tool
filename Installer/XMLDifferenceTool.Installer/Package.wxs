@@ -1,0 +1,101 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <!--
+    Per-user, x64 installer for XMLDifferenceTool (self-contained publish output).
+
+    UpgradeCode identifies this product across versions. NEVER change it once you have released an installer,
+    or new versions will install side by side instead of upgrading the old one.
+
+    $(AppVersion), $(PublishFolder) and $(LicensePath) come from the .wixproj (see DefineConstants there).
+  -->
+  <Package Name="XMLDifferenceTool"
+           Manufacturer="Keith O'Neill"
+           Version="$(AppVersion)"
+           UpgradeCode="BB6290AA-3B2E-4363-BDA3-8CB6EF42DAA9"
+           Scope="perUser">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- The application, the license text and the Start menu shortcut are always installed -->
+    <Feature Id="MainFeature"
+             Title="XMLDifferenceTool"
+             Description="The XMLDifferenceTool application."
+             Level="1"
+             AllowAbsent="no"
+             AllowAdvertise="no">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcutComponent" />
+    </Feature>
+
+    <!-- Level="2" is above the default install level (1), so this is off unless the user turns it on
+         in the Custom Setup screen -->
+    <Feature Id="DesktopShortcutFeature"
+             Title="Desktop shortcut"
+             Description="Place a shortcut to XMLDifferenceTool on the desktop."
+             Level="2"
+             AllowAdvertise="no">
+      <ComponentRef Id="DesktopShortcutComponent" />
+    </Feature>
+
+    <!-- Standard setup screens: Welcome, Custom Setup (feature tree), Ready to install, Progress, Finish -->
+    <ui:WixUI Id="WixUI_FeatureTree" />
+
+    <!-- Skip the license agreement page. The LICENSE file is installed next to the exe instead. -->
+    <UI>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="CustomizeDlg" Order="4" Condition="NOT Installed" />
+      <Publish Dialog="CustomizeDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="4" Condition="NOT Installed" />
+    </UI>
+  </Package>
+
+  <!-- Install folder: %LocalAppData%\Programs\XMLDifferenceTool (no admin rights needed) -->
+  <Fragment>
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="UserProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="XMLDifferenceTool" />
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Everything dotnet publish produced (runtime included), minus debug symbols, plus the license -->
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(PublishFolder)\**">
+        <Exclude Files="$(PublishFolder)\**\*.pdb" />
+      </Files>
+      <File Source="$(LicensePath)" Name="LICENSE.txt" />
+    </ComponentGroup>
+  </Fragment>
+
+  <!--
+    Shortcuts. In a per-user package a shortcut component needs a registry value under HKCU as its key path.
+    Adjust "XMLDifferenceTool.exe" below if the WinForms project's AssemblyName is different.
+  -->
+  <Fragment>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcutComponent">
+        <Shortcut Id="StartMenuShortcut"
+                  Name="XMLDifferenceTool"
+                  Description="Compare two XML files"
+                  Target="[INSTALLFOLDER]XMLDifferenceTool.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\XMLDifferenceTool" Name="StartMenuShortcut"
+                       Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcutComponent">
+        <Shortcut Id="DesktopShortcut"
+                  Name="XMLDifferenceTool"
+                  Description="Compare two XML files"
+                  Target="[INSTALLFOLDER]XMLDifferenceTool.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\XMLDifferenceTool" Name="DesktopShortcut"
+                       Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+  </Fragment>
+
+</Wix>

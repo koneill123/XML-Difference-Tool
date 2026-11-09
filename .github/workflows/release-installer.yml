@@ -1,0 +1,70 @@
+name: Release installer
+
+# Pushing a version tag such as v1.0.0 (or v1.1.0-beta.1) builds the MSI installer and attaches it to a DRAFT
+# GitHub release. Review the draft on GitHub and click Publish when you are happy with it.
+#
+# Release routine:
+#   1. Bump VersionPrefix (and VersionSuffix for a pre-release) in Directory.Build.props and commit.
+#   2. git tag v1.2.3
+#   3. git push origin v1.2.3
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # needed to create the release
+
+jobs:
+  build-installer:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read the version from the tag
+        id: tag
+        shell: pwsh
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ($env:TAG -notmatch '^v(\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?)$') {
+            throw "Tag '$($env:TAG)' is not a version tag such as v1.2.3 or v1.2.3-beta.1."
+          }
+          $isPrerelease = $Matches.ContainsKey(2)
+          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          "prerelease=$($isPrerelease.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+
+      # The script publishes the app (self-contained, win-x64), checks that its version matches the tag,
+      # and builds the MSI into artifacts\installer. -AcceptWixEula records acceptance of the WiX v7 EULA.
+      - name: Build the installer
+        shell: pwsh
+        run: ./installer/build-installer.ps1 -ExpectedVersion '${{ steps.tag.outputs.version }}' -AcceptWixEula
+
+      - name: Create a SHA-256 checksum
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem artifacts/installer -Filter *.msi | Select-Object -First 1
+          if (-not $msi) { throw 'No MSI was found in artifacts/installer.' }
+          $hash = (Get-FileHash $msi.FullName -Algorithm SHA256).Hash.ToLower()
+          "$hash  $($msi.Name)" | Out-File -FilePath "$($msi.FullName).sha256" -Encoding ascii
+
+      - name: Create the draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          IS_PRERELEASE: ${{ steps.tag.outputs.prerelease }}
+        run: |
+          $assets = Get-ChildItem artifacts/installer -File | ForEach-Object { $_.FullName }
+          $ghArgs = @('release', 'create', $env:TAG) + $assets + @(
+            '--draft', '--verify-tag', '--generate-notes', '--title', "XMLDifferenceTool $($env:TAG)")
+          if ($env:IS_PRERELEASE -eq 'true') { $ghArgs += '--prerelease' }
+          gh @ghArgs
+          if ($LASTEXITCODE -ne 0) { throw "gh release create failed (exit code $LASTEXITCODE)." }

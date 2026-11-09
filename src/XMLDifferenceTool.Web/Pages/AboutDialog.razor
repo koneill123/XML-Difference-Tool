@@ -1,0 +1,53 @@
+@using System.Reflection
+@using XMLDifferenceTool.Core
+
+<div class="about-backdrop" @onclick="Close">
+    <div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title" tabindex="-1"
+         @ref="_dialog" @onclick="() => { }" @onclick:stopPropagation="true" @onkeydown="OnKeyDown">
+        <h2 id="about-title">@ProjectInformation.AppName</h2>
+        <p class="muted">Version @Version</p>
+        <p>@ProjectInformation.DescriptionText</p>
+        <p>Copyright © 2026 Keith O'Neill<br />Released under the MIT License</p>
+        <p><a href="@ProjectInformation.ProjectUrl" target="_blank" rel="noopener noreferrer">@ProjectInformation.ProjectUrl</a></p>
+        <div class="about-actions">
+            <button type="button" class="btn btn-primary" @onclick="Close">OK</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ElementReference _dialog;
+
+    private static string Version
+    {
+        get
+        {
+            Assembly assembly = typeof(AboutDialog).Assembly;
+            string? informational = assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            if (!string.IsNullOrWhiteSpace(informational))
+            {
+                int plus = informational.IndexOf('+');
+                return plus >= 0 ? informational[..plus] : informational;
+            }
+
+            return assembly.GetName().Version?.ToString(3) ?? "unknown";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _dialog.FocusAsync();   // so Esc works immediately
+        }
+    }
+
+    private Task Close() => OnClose.InvokeAsync();
+
+    private Task OnKeyDown(KeyboardEventArgs e)
+        => e.Key == "Escape" ? OnClose.InvokeAsync() : Task.CompletedTask;
+}

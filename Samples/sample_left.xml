@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameOptions version="1.0" profile="Player1">
+  <!-- Header: mostly identical, a few differences -->
+  <Profile>
+    <PlayerName>NightOwl</PlayerName>
+    <Language>English</Language>
+    <Region>NA</Region>
+    <Tagline>Ready for adventure.</Tagline>
+  </Profile>
+
+  <Video>
+    <Resolution height="1080" />
+    <DisplayMode>Fullscreen</DisplayMode>
+    <VSync>true</VSync>
+    <FrameRateCap units="fps">60</FrameRateCap>
+    <Quality>
+      <Textures>High</Textures>
+      <Shadows>Medium</Shadows>
+      <AntiAliasing>MSAA 4x</AntiAliasing>
+    </Quality>
+    <FieldOfView units="degrees">90</FieldOfView>
+  </Video>
+
+  <Audio>
+    <Volume channel="Master">80</Volume>
+    <Volume channel="Music">60</Volume>
+    <Volume channel="Effects">75</Volume>
+    <Volume channel="Voice">100</Volume>
+    <Subtitles enabled="true" />
+  </Audio>
+
+  <Controls>
+    <Binding action="MoveForward" device="Keyboard">
+      <Key>W</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <Binding action="Jump" device="Keyboard">
+      <Key>Space</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <Binding action="Sprint" device="Keyboard">
+      <Key>LeftShift</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <!-- Crouch binding only in the left file -->
+    <Binding action="Crouch" device="Keyboard">
+      <Key>C</Key>
+      <Modifier>None</Modifier>
+    </Binding>
+    <MouseSensitivity>0.45</MouseSensitivity>
+  </Controls>
+
+  <Gameplay>
+    <Difficulty>Normal</Difficulty>
+    <Autosave enabled="true">
+      <Interval units="min">10</Interval>
+    </Autosave>
+    <ShowHints>true</ShowHints>
+    <CameraShake>On</CameraShake>
+  </Gameplay>
+
+  <Network>
+    <Region>Auto</Region>
+    <MaxPing units="ms">120</MaxPing>
+    <VoiceChat>true</VoiceChat>
+  </Network>
+</GameOptions>

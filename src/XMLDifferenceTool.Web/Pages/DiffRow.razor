@@ -1,0 +1,122 @@
+@using XMLDifferenceTool.Core
+@using XMLDifferenceTool.Web
+@implements IDisposable
+
+<div class="pair" role="treeitem" aria-level="@(Depth + 1)"
+     aria-expanded="@(_kids.Count > 0 ? (_open ? "true" : "false") : null)"
+     aria-selected="@(_selected ? "true" : "false")">
+    @foreach (var node in _sides)
+    {
+        <div class="@CellCss(node)" style="padding-left:@(Depth * 1.25)em" title="@Text(node)"
+             @onclick="Select" @ondblclick="Toggle">
+            <span class="twisty @(_kids.Count == 0 ? "leaf" : "")"
+                  @onclick="Toggle" @onclick:stopPropagation="true">@(_kids.Count == 0 ? "" : (_open ? "▼" : "▶"))</span>@Text(node)
+        </div>
+    }
+</div>
+
+@if (_open)
+{
+    foreach (var kid in _kids)
+    {
+        <DiffRow @key="kid.Path" Left="kid.Left" Right="kid.Right" Mask="Mask"
+                 ShowLineNumbers="ShowLineNumbers" State="State" ParentPath="@_path" Depth="Depth + 1" />
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public DiffNode Left { get; set; } = default!;
+    [Parameter, EditorRequired] public DiffNode Right { get; set; } = default!;
+    [Parameter, EditorRequired] public TreeState State { get; set; } = default!;
+    [Parameter] public DiffKindState Mask { get; set; }
+    [Parameter] public bool ShowLineNumbers { get; set; }
+    [Parameter] public string ParentPath { get; set; } = "";
+    [Parameter] public int Depth { get; set; }
+
+    private string _path = "";
+    private bool _open;
+    private bool _selected;
+    private DiffNode[] _sides = Array.Empty<DiffNode>();
+    private List<(string Path, DiffNode Left, DiffNode Right)> _kids = new();
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+
+    public void Dispose() => State.Changed -= OnStateChanged;
+
+    protected override void OnParametersSet()
+    {
+        _path = TreeState.Combine(ParentPath, Left);
+        _sides = new[] { Left, Right };
+        _open = State.IsOpen(_path);
+        _selected = State.SelectedPath == _path;
+
+        // After the diff, both sides hold the same children (placeholders fill the gaps),
+        // so each left child is paired with the right child that has the same kind and tag.
+        var rightByKey = new Dictionary<string, DiffNode>(StringComparer.Ordinal);
+        foreach (var child in Right.Children)
+        {
+            rightByKey.TryAdd(TreeState.KeyOf(child), child);
+        }
+
+        _kids = new();
+        foreach (var left in Left.ChildrenOfDiffKindState(Mask).OrderBy(c => c.Tag))
+        {
+            if (rightByKey.TryGetValue(TreeState.KeyOf(left), out var right))
+            {
+                _kids.Add((TreeState.Combine(_path, left), left, right));
+            }
+        }
+    }
+
+    // Re-render only the rows whose own open/selected state changed
+    private void OnStateChanged()
+    {
+        bool open = State.IsOpen(_path);
+        bool selected = State.SelectedPath == _path;
+        if (open != _open || selected != _selected)
+        {
+            _open = open;
+            _selected = selected;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Select() => State.Select(_path);
+
+    private void Toggle()
+    {
+        if (_kids.Count > 0)
+        {
+            State.Toggle(_path);
+        }
+    }
+
+    private string Text(DiffNode node)
+    {
+        string text = node.ToDisplayText(ShowLineNumbers);
+        return string.IsNullOrWhiteSpace(text) ? "\u00A0" : text;   // placeholder rows keep their height
+    }
+
+    // Same precedence as the WinForms form: Missing wins over Different
+    private string CellCss(DiffNode node)
+    {
+        DiffKindState states = node.ChangeType | node.ChildrenChangeType;
+        string css = "cell";
+
+        if ((states & Mask & (DiffKindState.ElementMissing | DiffKindState.AttributeMissing)) != 0)
+        {
+            css += " missing";
+        }
+        else if ((states & Mask & (DiffKindState.ElementDifferent | DiffKindState.AttributeDifferent)) != 0)
+        {
+            css += " different";
+        }
+
+        if (_selected)
+        {
+            css += " selected";
+        }
+
+        return css;
+    }
+}

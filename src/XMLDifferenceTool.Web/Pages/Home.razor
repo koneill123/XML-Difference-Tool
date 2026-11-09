@@ -1,0 +1,422 @@
+@page "/"
+@using System.Xml.Linq
+@using XMLDifferenceTool.Core
+@using XMLDifferenceTool.Web
+@inject ISettingsStore SettingsStore
+@inject HttpClient Http
+
+<PageTitle>XMLDifferenceTool</PageTitle>
+
+<div class="app-header">
+    <h1>XMLDifferenceTool</h1>
+    <button type="button" class="link-button" @onclick="() => _showAbout = true">About</button>
+</div>
+
+<div class="pickers">
+    <div class="picker @(_leftFailed ? "error" : "")">
+        <label for="leftFile">First file:</label>
+        <InputFile id="leftFile" OnChange="@(e => SelectFile(e, true))" accept=".xml" disabled="@_busy" />
+        @if (_leftSource is { IsSample: true })
+        {
+            <span class="muted">Sample: @_leftSource.Name</span>
+        }
+    </div>
+    <div class="picker @(_rightFailed ? "error" : "")">
+        <label for="rightFile">Second file:</label>
+        <InputFile id="rightFile" OnChange="@(e => SelectFile(e, false))" accept=".xml" disabled="@_busy" />
+        @if (_rightSource is { IsSample: true })
+        {
+            <span class="muted">Sample: @_rightSource.Name</span>
+        }
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" disabled="@(!CanCompare)" @onclick="RunLoadAndCompareAsync">Compare</button>
+</div>
+
+<div class="toolbar">
+    <fieldset class="options">
+        <legend>Display</legend>
+        <label class="same"><input type="checkbox" @bind="settings.ShowSame" @bind:after="OnDisplayChanged" /> Same Items</label>
+        <label class="different"><input type="checkbox" @bind="settings.ShowDifferent" @bind:after="OnDisplayChanged" /> Different Items</label>
+        <label class="missing"><input type="checkbox" @bind="settings.ShowMissing" @bind:after="OnDisplayChanged" /> Missing Items</label>
+        <br />
+        <label><input type="checkbox" @bind="settings.ShowAttributes" @bind:after="OnDisplayChanged" /> Attributes (a)</label>
+        <label><input type="checkbox" @bind="settings.ShowElements" @bind:after="OnDisplayChanged" /> Elements (e)</label>
+        <label><input type="checkbox" @bind="settings.ShowLineNumbers" @bind:after="OnDisplayChanged" /> Show Line Numbers</label>
+    </fieldset>
+
+    <fieldset class="options">
+        <legend>Match repeated elements by</legend>
+        <label>
+            <input type="radio" name="matchMode" disabled="@_busy"
+                   checked="@(settings.MatchMode == MatchRepeateElementsBy.OrderInFile)"
+                   @onchange="@(() => SetMatchMode(MatchRepeateElementsBy.OrderInFile))" /> Order in file
+        </label>
+        <label>
+            <input type="radio" name="matchMode" disabled="@_busy"
+                   checked="@(settings.MatchMode == MatchRepeateElementsBy.NameAndValue)"
+                   @onchange="@(() => SetMatchMode(MatchRepeateElementsBy.NameAndValue))" /> Name and value
+        </label>
+    </fieldset>
+
+    <fieldset class="options">
+        <legend>Namespace handling</legend>
+        <label title="Normal XML namespace rules. A file that uses an undeclared prefix is rejected.">
+            <input type="radio" name="namespaceMode" disabled="@_busy"
+                   checked="@(settings.NamespaceMode == NamespaceHandling.Standard)"
+                   @onchange="@(() => SetNamespaceMode(NamespaceHandling.Standard))" /> Standard
+        </label>
+        <label title="Treat prefixes such as xlink: as part of the name. Names are compared exactly as written.">
+            <input type="radio" name="namespaceMode" disabled="@_busy"
+                   checked="@(settings.NamespaceMode == NamespaceHandling.LiteralPrefixes)"
+                   @onchange="@(() => SetNamespaceMode(NamespaceHandling.LiteralPrefixes))" /> Literal prefixes
+        </label>
+        <label title="Standard rules, switching to literal prefixes only for a file that has a namespace problem.">
+            <input type="radio" name="namespaceMode" disabled="@_busy"
+                   checked="@(settings.NamespaceMode == NamespaceHandling.Automatic)"
+                   @onchange="@(() => SetNamespaceMode(NamespaceHandling.Automatic))" /> Automatic
+        </label>
+    </fieldset>
+
+    <div class="actions">
+        <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@(_left is null || _busy)" @onclick="ExpandAll">Expand All</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@(_left is null || _busy)" @onclick="CollapseAll">Collapse All</button>
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <div class="error-banner" role="alert">@_error</div>
+}
+
+@if (_notice is not null)
+{
+    <div class="notice-banner" role="status">@_notice</div>
+}
+
+<div class="tree-pane">
+    @if (_left is not null && _right is not null)
+    {
+        <div class="pair header">
+            <div class="cell">@(_leftName ?? "First file")</div>
+            <div class="cell">@(_rightName ?? "Second file")</div>
+        </div>
+
+        @if (RootVisible)
+        {
+            <div role="tree">
+                <DiffRow Left="_left" Right="_right" Mask="Mask" ShowLineNumbers="settings.ShowLineNumbers" State="_tree" />
+            </div>
+        }
+        else
+        {
+            <div class="pair">
+                <div class="cell">None</div>
+                <div class="cell">None</div>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="muted empty-state">@(HasBothSources ? "Press Compare to compare the two files." : "Choose two XML files to compare.")</p>
+    }
+</div>
+
+<ProgressOverlay Visible="@_busy" Message="@_progressMessage" Fraction="@_progressFraction" ShowDelayMs="@OverlayShowDelayMs" />
+
+@if (_showAbout)
+{
+    <AboutDialog OnClose="CloseAbout" />
+}
+
+@code {
+    private const long MaxFileBytes = 20_000_000;
+
+    private AppSettings settings = new();
+    private readonly TreeState _tree = new();
+
+    // A chosen file. Nothing is read until Compare is pressed (or the match mode changes), as in the WinForms
+    // app, where picking a file only fills in its path.
+    private sealed record FileSource(string Name, Func<Task<Stream>> OpenAsync, bool IsSample = false);
+
+    private FileSource? _leftSource, _rightSource;
+
+    // Names of the files in the comparison currently displayed
+    private string? _leftName, _rightName;
+    private bool _leftFailed, _rightFailed;
+    private DiffNode? _left, _right;
+    private string? _error;
+    private string? _notice;   // e.g. a file was loaded with literal prefixes
+    private bool _showAbout;
+
+    // Progress overlay state
+    private bool _busy;
+    private string _progressMessage = "Working...";
+    private double? _progressFraction;
+
+    // The overlay is drawn as soon as work starts but fades in only after this delay (see ProgressOverlay),
+    // so quick comparisons never flash it.
+    private const int OverlayShowDelayMs = 400;
+
+    // Short pauses that let the browser paint: once before heavy synchronous work starts, and between stages.
+    private const int OverlayPaintDelayMs = 50;
+    private const int StageYieldDelayMs = 30;
+
+    private static DiffKindState If(bool on, DiffKindState flag) => on ? flag : DiffKindState.None;
+
+    // The same filter mask the WinForms form builds from its Display menu
+    private DiffKindState Mask
+    {
+        get
+        {
+            DiffKindState elements =
+                If(settings.ShowSame, DiffKindState.ElementSame)
+                | If(settings.ShowDifferent, DiffKindState.ElementDifferent)
+                | If(settings.ShowMissing, DiffKindState.ElementMissing);
+
+            DiffKindState attributes =
+                If(settings.ShowSame, DiffKindState.AttributeSame)
+                | If(settings.ShowDifferent, DiffKindState.AttributeDifferent)
+                | If(settings.ShowMissing, DiffKindState.AttributeMissing);
+
+            return If(settings.ShowElements, elements) | If(settings.ShowAttributes, attributes);
+        }
+    }
+
+    private bool RootVisible
+        => _left is not null
+           && ((_left.ChangeType & Mask) != 0 || _left.ChildrenOfDiffKindState(Mask).Count > 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        settings = await SettingsStore.LoadAsync();
+
+#if DEBUG
+        // Debugging convenience: preselect the sample files from wwwroot/sample-data; press Compare to compare them
+        _leftSource = SampleSource("sample_left.xml");
+        _rightSource = SampleSource("sample_right.xml");
+#endif
+    }
+
+#if DEBUG
+    private FileSource SampleSource(string fileName)
+        => new(fileName, () => Http.GetStreamAsync($"sample-data/{fileName}"), IsSample: true);
+#endif
+
+    private bool HasBothSources => _leftSource is not null && _rightSource is not null;
+
+    private bool CanCompare => HasBothSources && !_busy;
+
+    // Picking a file only remembers it. The comparison on screen stays as it was until Compare is pressed.
+    private void SelectFile(InputFileChangeEventArgs e, bool isLeft)
+    {
+        FileSource? source = null;
+
+        // A cancelled file dialog can leave the input empty
+        if (e.FileCount == 1)
+        {
+            IBrowserFile file = e.File;
+            source = new FileSource(file.Name, () => Task.FromResult<Stream>(file.OpenReadStream(maxAllowedSize: MaxFileBytes)));
+        }
+
+        if (isLeft) { _leftSource = source; _leftFailed = false; }
+        else { _rightSource = source; _rightFailed = false; }
+
+        _error = null;
+    }
+
+    // A file's bytes (kept so a file can be parsed again without being read again) and how it was loaded
+    private sealed record LoadedFile(byte[] Bytes, LoadedXml Xml);
+
+    // Loads both files and compares them, like the WinForms Compare button. Also used when the match mode or the
+    // namespace handling changes.
+    private async Task RunLoadAndCompareAsync()
+    {
+        FileSource? left = _leftSource;
+        FileSource? right = _rightSource;
+        if (left is null || right is null)
+        {
+            return;
+        }
+
+        await RunWithProgressAsync($"Loading {left.Name}...", async () =>
+        {
+            _error = null;
+            _notice = null;
+            _leftFailed = _rightFailed = false;
+            _left = _right = null;
+
+            LoadedFile? leftFile = await TryLoadAsync(left, isLeft: true);
+            if (leftFile is null)
+            {
+                return;
+            }
+
+            _progressMessage = $"Loading {right.Name}...";
+            _progressFraction = null;
+            StateHasChanged();
+            await Task.Delay(StageYieldDelayMs);
+
+            LoadedFile? rightFile = await TryLoadAsync(right, isLeft: false);
+            if (rightFile is null)
+            {
+                return;
+            }
+
+            // In Automatic mode, if only one file needed literal prefixes, the other is loaded the same way
+            // so that both files use the same names.
+            (LoadedXml leftXml, LoadedXml rightXml) = XmlLoader.Reconcile(
+                leftFile.Xml, leftFile.Bytes, rightFile.Xml, rightFile.Bytes, settings.NamespaceMode);
+
+            _notice = XmlLoader.DescribeNotices(left.Name, leftXml, right.Name, rightXml, "\n");
+            _leftName = left.Name;
+            _rightName = right.Name;
+
+            // Outside the load try/catch, so a failure while comparing is not blamed on a file
+            await RunDiffAsync(leftXml.Document, rightXml.Document);
+        });
+    }
+
+    private async Task<LoadedFile?> TryLoadAsync(FileSource source, bool isLeft)
+    {
+        try
+        {
+            await using Stream stream = await source.OpenAsync();
+            using MemoryStream buffer = new();
+            await stream.CopyToAsync(buffer);
+
+            byte[] bytes = buffer.ToArray();
+            return new LoadedFile(bytes, XmlLoader.Load(bytes, settings.NamespaceMode));
+        }
+        catch (Exception ex)
+        {
+            if (isLeft) { _leftFailed = true; }
+            else { _rightFailed = true; }
+
+            _error = $"Error opening file: {source.Name}\n{ex.Message}";
+            return null;
+        }
+    }
+
+    // Shows the progress overlay around long-running work. The page runs on a single thread, so the overlay is
+    // drawn first and the work then yields at stage boundaries to let the browser repaint. The inputs are
+    // disabled while busy; the guard below is a safety net.
+    private async Task RunWithProgressAsync(string startMessage, Func<Task> work)
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _progressMessage = startMessage;
+        _progressFraction = null;
+        StateHasChanged();
+
+        // Pause briefly so the overlay is painted before heavy synchronous work blocks the thread
+        await Task.Delay(OverlayPaintDelayMs);
+
+        try
+        {
+            await work();
+        }
+        finally
+        {
+            _busy = false;
+            StateHasChanged();
+        }
+    }
+
+    // Builds both trees from the freshly loaded documents: the diff adds placeholder nodes to the lists, so the
+    // trees are never reused. Call through RunWithProgressAsync.
+    private async Task RunDiffAsync(XDocument leftDoc, XDocument rightDoc)
+    {
+        _left = _right = null;
+
+        try
+        {
+            Progress<DiffProgress> progress = new(OnDiffProgress);
+            DiffResult result = await XmlDiffService.CompareAsync(leftDoc, rightDoc, settings.MatchMode, progress, StageYieldDelayMs);
+
+            _left = result.Left;
+            _right = result.Right;
+            _tree.Reset(TreeState.KeyOf(_left));
+
+            // Drawing a large tree also blocks the page, so keep the overlay up while it is rendered
+            _progressMessage = "Displaying the results...";
+            _progressFraction = null;
+            StateHasChanged();
+            await Task.Delay(StageYieldDelayMs);
+        }
+        catch (Exception ex)
+        {
+            _left = _right = null;
+            _error = $"Error comparing the files:\n{ex.Message}";
+        }
+    }
+
+    private void OnDiffProgress(DiffProgress progress)
+    {
+        _progressMessage = progress.Message;
+        _progressFraction = progress.Fraction;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnDisplayChanged() => await SettingsStore.SaveAsync(settings);
+
+    private async Task SetMatchMode(MatchRepeateElementsBy mode)
+    {
+        if (_busy || settings.MatchMode == mode)
+        {
+            return;
+        }
+
+        settings.MatchMode = mode;
+
+        // As in WinForms: changing the match mode compares again, provided both files are chosen
+        if (HasBothSources)
+        {
+            await RunLoadAndCompareAsync();
+        }
+
+        await SettingsStore.SaveAsync(settings);
+    }
+
+    private async Task SetNamespaceMode(NamespaceHandling mode)
+    {
+        if (_busy || settings.NamespaceMode == mode)
+        {
+            return;
+        }
+
+        settings.NamespaceMode = mode;
+
+        // Like a change to the match mode: compare again, provided both files are chosen
+        if (HasBothSources)
+        {
+            await RunLoadAndCompareAsync();
+        }
+
+        await SettingsStore.SaveAsync(settings);
+    }
+
+    private async Task ExpandAll()
+    {
+        // Rendering every row of a large tree blocks the page, so show the overlay while it is drawn
+        await RunWithProgressAsync("Expanding all items...", async () =>
+        {
+            _tree.ExpandAll();
+            StateHasChanged();
+            await Task.Delay(StageYieldDelayMs);
+        });
+    }
+
+    private void CollapseAll()
+    {
+        if (_left is not null)
+        {
+            _tree.CollapseAll(TreeState.KeyOf(_left));
+        }
+    }
+
+    private void CloseAbout() => _showAbout = false;
+}
