@@ -19,6 +19,10 @@
     <SuppressIces>ICE38;ICE64;ICE91</SuppressIces>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AcceptEula>wix7</AcceptEula>
+  </PropertyGroup>
+  
   <ItemGroup>
     <!-- Standard WiX dialogs (the Custom Setup feature tree used for the optional desktop shortcut) -->
     <PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
