@@ -89,17 +89,17 @@ namespace XMLDifferenceTool
             tableLayoutPanelMain.RowStyles.Add(new RowStyle());
             tableLayoutPanelMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanelMain.Size = new Size(1356, 530);
+            tableLayoutPanelMain.Size = new Size(961, 365);
             tableLayoutPanelMain.TabIndex = 0;
             // 
             // treeViewRight
             // 
             treeViewRight.CausesValidation = false;
             treeViewRight.Dock = DockStyle.Fill;
-            treeViewRight.Location = new Point(684, 70);
+            treeViewRight.Location = new Point(486, 70);
             treeViewRight.Margin = new Padding(6, 7, 6, 7);
             treeViewRight.Name = "treeViewRight";
-            treeViewRight.Size = new Size(666, 453);
+            treeViewRight.Size = new Size(469, 288);
             treeViewRight.TabIndex = 9;
             treeViewRight.AfterCollapse += treeViewRight_AfterCollapse;
             treeViewRight.AfterExpand += treeViewRight_AfterExpand;
@@ -112,7 +112,7 @@ namespace XMLDifferenceTool
             treeViewLeft.Location = new Point(6, 70);
             treeViewLeft.Margin = new Padding(6, 7, 6, 7);
             treeViewLeft.Name = "treeViewLeft";
-            treeViewLeft.Size = new Size(666, 453);
+            treeViewLeft.Size = new Size(468, 288);
             treeViewLeft.TabIndex = 7;
             treeViewLeft.AfterCollapse += treeViewLeft_AfterCollapse;
             treeViewLeft.AfterExpand += treeViewLeft_AfterExpand;
@@ -136,7 +136,7 @@ namespace XMLDifferenceTool
             tableLayoutPanelFileSelection.Name = "tableLayoutPanelFileSelection";
             tableLayoutPanelFileSelection.RowCount = 1;
             tableLayoutPanelFileSelection.RowStyles.Add(new RowStyle());
-            tableLayoutPanelFileSelection.Size = new Size(1344, 49);
+            tableLayoutPanelFileSelection.Size = new Size(949, 49);
             tableLayoutPanelFileSelection.TabIndex = 11;
             // 
             // tableLayoutPanelRight
@@ -152,18 +152,18 @@ namespace XMLDifferenceTool
             tableLayoutPanelRight.Controls.Add(label2, 0, 0);
             tableLayoutPanelRight.Controls.Add(buttonCompare, 3, 0);
             tableLayoutPanelRight.Dock = DockStyle.Fill;
-            tableLayoutPanelRight.Location = new Point(672, 0);
+            tableLayoutPanelRight.Location = new Point(474, 0);
             tableLayoutPanelRight.Margin = new Padding(0);
             tableLayoutPanelRight.Name = "tableLayoutPanelRight";
             tableLayoutPanelRight.RowCount = 1;
             tableLayoutPanelRight.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelRight.Size = new Size(672, 49);
+            tableLayoutPanelRight.Size = new Size(475, 49);
             tableLayoutPanelRight.TabIndex = 13;
             // 
             // buttonFileRightSelect
             // 
             buttonFileRightSelect.Anchor = AnchorStyles.Left;
-            buttonFileRightSelect.Location = new Point(518, 7);
+            buttonFileRightSelect.Location = new Point(321, 7);
             buttonFileRightSelect.Margin = new Padding(6, 7, 6, 7);
             buttonFileRightSelect.Name = "buttonFileRightSelect";
             buttonFileRightSelect.Size = new Size(35, 35);
@@ -178,7 +178,7 @@ namespace XMLDifferenceTool
             textBoxFileRight.Location = new Point(134, 7);
             textBoxFileRight.Margin = new Padding(6, 0, 6, 0);
             textBoxFileRight.Name = "textBoxFileRight";
-            textBoxFileRight.Size = new Size(372, 35);
+            textBoxFileRight.Size = new Size(175, 35);
             textBoxFileRight.TabIndex = 11;
             textBoxFileRight.Text = "None";
             textBoxFileRight.TextChanged += textBox_TextChanged;
@@ -201,7 +201,7 @@ namespace XMLDifferenceTool
             // 
             buttonCompare.Anchor = AnchorStyles.Left;
             buttonCompare.AutoSize = true;
-            buttonCompare.Location = new Point(562, 4);
+            buttonCompare.Location = new Point(365, 4);
             buttonCompare.Name = "buttonCompare";
             buttonCompare.Size = new Size(107, 40);
             buttonCompare.TabIndex = 12;
@@ -225,13 +225,13 @@ namespace XMLDifferenceTool
             tableLayoutPanelLeft.Name = "tableLayoutPanelLeft";
             tableLayoutPanelLeft.RowCount = 1;
             tableLayoutPanelLeft.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelLeft.Size = new Size(672, 49);
+            tableLayoutPanelLeft.Size = new Size(474, 49);
             tableLayoutPanelLeft.TabIndex = 14;
             // 
             // buttonFileLeftSelect
             // 
             buttonFileLeftSelect.Anchor = AnchorStyles.Left;
-            buttonFileLeftSelect.Location = new Point(631, 7);
+            buttonFileLeftSelect.Location = new Point(433, 7);
             buttonFileLeftSelect.Margin = new Padding(6, 7, 6, 7);
             buttonFileLeftSelect.Name = "buttonFileLeftSelect";
             buttonFileLeftSelect.Size = new Size(35, 35);
@@ -246,7 +246,7 @@ namespace XMLDifferenceTool
             textBoxFileLeft.Location = new Point(103, 7);
             textBoxFileLeft.Margin = new Padding(6, 0, 6, 0);
             textBoxFileLeft.Name = "textBoxFileLeft";
-            textBoxFileLeft.Size = new Size(516, 35);
+            textBoxFileLeft.Size = new Size(318, 35);
             textBoxFileLeft.TabIndex = 10;
             textBoxFileLeft.Text = "None";
             textBoxFileLeft.TextChanged += textBox_TextChanged;
@@ -271,7 +271,7 @@ namespace XMLDifferenceTool
             menuStripMain.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, displayToolStripMenuItem, toolStripMenuItemtoolStripMenuItemOptions, helpToolStripMenuItem });
             menuStripMain.Location = new Point(0, 0);
             menuStripMain.Name = "menuStripMain";
-            menuStripMain.Size = new Size(1356, 38);
+            menuStripMain.Size = new Size(961, 38);
             menuStripMain.TabIndex = 1;
             menuStripMain.Text = "menuStripMain";
             // 
@@ -285,7 +285,7 @@ namespace XMLDifferenceTool
             // refreshToolStripMenuItem
             // 
             refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
-            refreshToolStripMenuItem.Size = new Size(315, 40);
+            refreshToolStripMenuItem.Size = new Size(200, 40);
             refreshToolStripMenuItem.Text = "Refresh";
             // 
             // displayToolStripMenuItem
@@ -301,7 +301,7 @@ namespace XMLDifferenceTool
             sameItemsToolStripMenuItem.CheckOnClick = true;
             sameItemsToolStripMenuItem.CheckState = CheckState.Checked;
             sameItemsToolStripMenuItem.Name = "sameItemsToolStripMenuItem";
-            sameItemsToolStripMenuItem.Size = new Size(315, 40);
+            sameItemsToolStripMenuItem.Size = new Size(270, 40);
             sameItemsToolStripMenuItem.Text = "Same Items";
             sameItemsToolStripMenuItem.CheckedChanged += sameItemsToolStripMenuItem_CheckedChanged;
             // 
@@ -311,7 +311,7 @@ namespace XMLDifferenceTool
             missingItemsToolStripMenuItem.CheckOnClick = true;
             missingItemsToolStripMenuItem.CheckState = CheckState.Checked;
             missingItemsToolStripMenuItem.Name = "missingItemsToolStripMenuItem";
-            missingItemsToolStripMenuItem.Size = new Size(315, 40);
+            missingItemsToolStripMenuItem.Size = new Size(270, 40);
             missingItemsToolStripMenuItem.Text = "Missing Items";
             missingItemsToolStripMenuItem.CheckedChanged += missingItemsToolStripMenuItem_CheckedChanged;
             // 
@@ -321,14 +321,14 @@ namespace XMLDifferenceTool
             differentItemsToolStripMenuItem.CheckOnClick = true;
             differentItemsToolStripMenuItem.CheckState = CheckState.Checked;
             differentItemsToolStripMenuItem.Name = "differentItemsToolStripMenuItem";
-            differentItemsToolStripMenuItem.Size = new Size(315, 40);
+            differentItemsToolStripMenuItem.Size = new Size(270, 40);
             differentItemsToolStripMenuItem.Text = "Different Items";
             differentItemsToolStripMenuItem.CheckedChanged += differentItemsToolStripMenuItem_CheckedChanged;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(312, 6);
+            toolStripSeparator1.Size = new Size(267, 6);
             // 
             // attributesToolStripMenuItem
             // 
@@ -336,7 +336,7 @@ namespace XMLDifferenceTool
             attributesToolStripMenuItem.CheckOnClick = true;
             attributesToolStripMenuItem.CheckState = CheckState.Checked;
             attributesToolStripMenuItem.Name = "attributesToolStripMenuItem";
-            attributesToolStripMenuItem.Size = new Size(315, 40);
+            attributesToolStripMenuItem.Size = new Size(270, 40);
             attributesToolStripMenuItem.Text = "Attributes (a)";
             attributesToolStripMenuItem.CheckedChanged += attributesToolStripMenuItem_CheckedChanged;
             // 
@@ -346,26 +346,26 @@ namespace XMLDifferenceTool
             elementsToolStripMenuItem.CheckOnClick = true;
             elementsToolStripMenuItem.CheckState = CheckState.Checked;
             elementsToolStripMenuItem.Name = "elementsToolStripMenuItem";
-            elementsToolStripMenuItem.Size = new Size(315, 40);
+            elementsToolStripMenuItem.Size = new Size(270, 40);
             elementsToolStripMenuItem.Text = "Elements (e)";
             elementsToolStripMenuItem.CheckedChanged += elementsToolStripMenuItem_CheckedChanged;
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(312, 6);
+            toolStripSeparator2.Size = new Size(267, 6);
             // 
             // expandAllToolStripMenuItem
             // 
             expandAllToolStripMenuItem.Name = "expandAllToolStripMenuItem";
-            expandAllToolStripMenuItem.Size = new Size(315, 40);
+            expandAllToolStripMenuItem.Size = new Size(270, 40);
             expandAllToolStripMenuItem.Text = "&Expand All";
             expandAllToolStripMenuItem.Click += expandAllToolStripMenuItem_Click;
             // 
             // collapseAllToolStripMenuItem
             // 
             collapseAllToolStripMenuItem.Name = "collapseAllToolStripMenuItem";
-            collapseAllToolStripMenuItem.Size = new Size(315, 40);
+            collapseAllToolStripMenuItem.Size = new Size(270, 40);
             collapseAllToolStripMenuItem.Text = "&Collapse All";
             collapseAllToolStripMenuItem.Click += collapseAllToolStripMenuItem_Click;
             // 
@@ -462,16 +462,16 @@ namespace XMLDifferenceTool
             // 
             statusStrip1.ImageScalingSize = new Size(28, 28);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNotice });
-            statusStrip1.Location = new Point(0, 568);
+            statusStrip1.Location = new Point(0, 403);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(1356, 22);
+            statusStrip1.Size = new Size(961, 22);
             statusStrip1.TabIndex = 2;
             statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabelNotice
             // 
             toolStripStatusLabelNotice.Name = "toolStripStatusLabelNotice";
-            toolStripStatusLabelNotice.Size = new Size(1341, 13);
+            toolStripStatusLabelNotice.Size = new Size(946, 13);
             toolStripStatusLabelNotice.Spring = true;
             toolStripStatusLabelNotice.TextAlign = ContentAlignment.MiddleLeft;
             // 
@@ -480,8 +480,8 @@ namespace XMLDifferenceTool
             AutoScaleDimensions = new SizeF(168F, 168F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
-            AutoScrollMinSize = new Size(1275, 568);
-            ClientSize = new Size(1386, 542);
+            AutoScrollMinSize = new Size(640, 400);
+            ClientSize = new Size(961, 425);
             Controls.Add(tableLayoutPanelMain);
             Controls.Add(menuStripMain);
             Controls.Add(statusStrip1);
